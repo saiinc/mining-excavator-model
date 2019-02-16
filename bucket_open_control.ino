@@ -20,13 +20,21 @@ void loop() //процедура loop
   if (butt == true && butt_flag == false) //кнопка нажата
     {
       butt_flag = true;      
+<<<<<<< HEAD
       for(ugol1 = 5; ugol1 <= 165; ugol1++) //медленно открываем днище ковша
+=======
+      for(ugol1 = 5; ugol1 <= 165; ugol1++)
+>>>>>>> d6493ccd26a6f357b5346cfb57634d1a8ae207c9
       {
         servo1.write(ugol1); 
         delay(rot_spd);
       }      
       delay(rot_spd*4);
+<<<<<<< HEAD
       for(ugol1 = 165; ugol1 >= 5; ugol1--) //возвращаемся в исходное положение
+=======
+      for(ugol1 = 165; ugol1 >= 5; ugol1--)
+>>>>>>> d6493ccd26a6f357b5346cfb57634d1a8ae207c9
       {
         servo1.write(ugol1); 
         delay(rot_spd);
