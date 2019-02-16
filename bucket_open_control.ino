@@ -10,7 +10,7 @@ int ugol1;
 void setup() //процедура setup
 {  
   servo1.attach(10); //привязываем привод к порту 10
-  pinMode(3, INPUT_PULLUP);  
+  pinMode(3, INPUT_PULLUP);  //привязываем кнопку к порту 3
   servo1.write(5);    
 }
 
@@ -20,13 +20,13 @@ void loop() //процедура loop
   if (butt == true && butt_flag == false) //кнопка нажата
     {
       butt_flag = true;      
-      for(ugol1 = 5; ugol1 <= 155; ugol1++)
+      for(ugol1 = 5; ugol1 <= 165; ugol1++)
       {
         servo1.write(ugol1); 
         delay(rot_spd);
       }      
       delay(rot_spd*4);
-      for(ugol1 = 155; ugol1 >= 5; ugol1--)
+      for(ugol1 = 165; ugol1 >= 5; ugol1--)
       {
         servo1.write(ugol1); 
         delay(rot_spd);
