@@ -38,14 +38,17 @@ void loop() //процедура loop
       {        
         servo1.write(ugol1); 
         Serial.println(ugol1);
-        delay(rot_spd);
+        unsigned long current_Time = millis();
+        while(millis()-rot_spd < current_Time);
       }      
-      delay(rot_spd*4);
+      unsigned long current_Time = millis();
+      while(millis()-rot_spd*10 < current_Time);
       for(ugol1 = 160; ugol1 >= 5; ugol1--) //возвращаемся в исходное положение
       {
         Serial.println(ugol1);
         servo1.write(ugol1); 
-        delay(rot_spd);
+        unsigned long current_Time = millis();
+        while(millis()-rot_spd < current_Time);
       }            
       butt_flag = false;    
       servo1.detach(); //отвязываем серву
