@@ -62,12 +62,20 @@ void loop() {
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
       Serial.println("cm,   ");
    }   
-   if (distance < 50)
-      {digitalWrite(drive_back_relay_PIN, HIGH);}
-      else {digitalWrite(drive_back_relay_PIN, LOW);}   
-   if (distance > 110)
-      {digitalWrite(drive_front_relay_PIN, HIGH);}
-      else {digitalWrite(drive_front_relay_PIN, LOW);}   
+   if (distance == 0)
+   {
+      digitalWrite(drive_back_relay_PIN, HIGH);
+      digitalWrite(drive_front_relay_PIN, HIGH);
+   }
+    else
+      {
+        if (distance < 50)
+          {digitalWrite(drive_back_relay_PIN, HIGH);}
+          else {digitalWrite(drive_back_relay_PIN, LOW);}   
+        if (distance > 110)
+          {digitalWrite(drive_front_relay_PIN, HIGH);}
+          else {digitalWrite(drive_front_relay_PIN, LOW);}   
+      }   
       
    debouncer.update();
    if (debouncer.fell() == true && butt_flag == false)
