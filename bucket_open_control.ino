@@ -33,7 +33,7 @@ void setup () {
    myservo.attach(10);  // attaches the servo on pin 9 to the servo object
    pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту 3
    pinMode(drive_back_relay_PIN, OUTPUT);
-   myservo.write(0, 0, true);
+   myservo.write(5, 0, true);
    myservo.detach();
    Serial.begin(9600);
    debouncer.attach(PIN_BUTTON);
@@ -75,9 +75,9 @@ void loop() {
    if (myservo.read() == 180 && butt_flag == true)
    {           
       servo_flag = true;
-      myservo.write(0, 20, false);                   
+      myservo.write(5, 20, false);                   
    }
-   if (myservo.read() == 0 && servo_flag == true)
+   if (myservo.read() == 5 && servo_flag == true)
    {           
       servo_flag = false;      
       butt_flag = false;
