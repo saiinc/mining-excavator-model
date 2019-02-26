@@ -16,6 +16,7 @@
 #define ECHO_PIN 6  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 #define drive_back_relay_PIN 4
+#define drive_front_relay_PIN 5
 #define led_INTERVAL  500UL 
 #define distacne_check_INTERVAL 500
 
@@ -33,6 +34,7 @@ void setup () {
    myservo.attach(10);  // attaches the servo on pin 9 to the servo object
    pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту 3
    pinMode(drive_back_relay_PIN, OUTPUT);
+   pinMode(drive_front_relay_PIN, OUTPUT);
    myservo.write(5, 0, true);
    myservo.detach();
    Serial.begin(9600);
@@ -60,9 +62,12 @@ void loop() {
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
       Serial.println("cm,   ");
    }   
-   if (distance < 100)
+   if (distance < 50)
       {digitalWrite(drive_back_relay_PIN, HIGH);}
       else {digitalWrite(drive_back_relay_PIN, LOW);}   
+   if (distance > 110)
+      {digitalWrite(drive_front_relay_PIN, HIGH);}
+      else {digitalWrite(drive_front_relay_PIN, LOW);}   
       
    debouncer.update();
    if (debouncer.fell() == true && butt_flag == false)
