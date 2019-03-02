@@ -62,10 +62,10 @@ void loop() {
    }
     else
       {
-        if (distance < 50)
+        if (distance < 35)
           {digitalWrite(drive_back_relay_PIN, HIGH);}
           else {digitalWrite(drive_back_relay_PIN, LOW);}   
-        if (distance > 110)
+        if (distance > 90)
           {digitalWrite(drive_front_relay_PIN, HIGH);}
           else {digitalWrite(drive_front_relay_PIN, LOW);}   
       }   
