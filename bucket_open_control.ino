@@ -7,7 +7,7 @@
 #define ledPin 13
 #define TRIGGER_PIN 7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN 6  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+#define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm (Max 255cm now).
 #define drive_back_relay_PIN 4
 #define drive_front_relay_PIN 5
 #define led_INTERVAL  500UL 
@@ -20,7 +20,7 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 boolean butt_flag = false;
 boolean servo_flag = false;
 unsigned long sonar_timing = 0;
-int distance;
+byte distance; // Max 255cm.
 
 void setup () {
    pinMode(ledPin, OUTPUT); // устанавливаем порт, как выход
@@ -49,11 +49,11 @@ void loop() {
       
    if (millis() - sonar_timing > distacne_check_INTERVAL)
    {
-      sonar_timing = millis(); 
-      Serial.print("Ping: ");
+      sonar_timing = millis();       
       distance = sonar.ping_cm();
+	  Serial.print("Ping: ");
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
-      Serial.println("cm,   ");
+      Serial.println("cm");
    }   
    if (distance == 0)
    {
