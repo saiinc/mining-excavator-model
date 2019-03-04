@@ -7,6 +7,7 @@
 #include <NewPing.h>
 
 #define PIN_BUTTON 3
+#define servoPin 10
 #define ledPin 13
 #define TRIGGER_PIN 7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN 6  // Arduino pin tied to echo pin on the ultrasonic sensor.
@@ -43,23 +44,23 @@ void setup () {
     // you can change the contrast around to adapt the display
     // for the best viewing!
    display.setContrast(60);
-   display.display(); // show splashscreen
-   delay(2000);
+   display.display(); // show splashscreen   
     // russian font
    display.clearDisplay();
    display.setTextColor(BLACK);   
    display.setTextSize(2);   
    
    pinMode(ledPin, OUTPUT); // устанавливаем порт, как выход
-   myservo.attach(10);  // attaches the servo on pin to the servo object
+   myservo.attach(servoPin);  // attaches the servo on pin to the servo object
    pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту
    pinMode(drive_back_relay_PIN, OUTPUT);
    pinMode(drive_front_relay_PIN, OUTPUT);
-   myservo.write(5, 0, true);
+   myservo.write(15, 0, true);
    myservo.detach();
    Serial.begin(9600);
    debouncer.attach(PIN_BUTTON);
    debouncer.interval(25);
+   delay(2000);
 }
 
 void loop() {
@@ -114,16 +115,16 @@ void loop() {
    if (debouncer.fell() == true && butt_flag == false)
    {
       butt_flag = true;
-      myservo.attach(10);
+      myservo.attach(servoPin);
       myservo.write(180, 20, false);      
       butt_flag = true;
    }
    if (myservo.read() == 180 && butt_flag == true)
    {           
       servo_flag = true;
-      myservo.write(5, 20, false);                   
+      myservo.write(15, 20, false);                   
    }
-   if (myservo.read() == 5 && servo_flag == true)
+   if (myservo.read() == 15 && servo_flag == true)
    {           
       servo_flag = false;      
       butt_flag = false;
