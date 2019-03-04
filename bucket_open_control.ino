@@ -1,3 +1,4 @@
+
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
@@ -13,7 +14,8 @@
 #define drive_back_relay_PIN 4
 #define drive_front_relay_PIN 5
 #define led_INTERVAL  500UL 
-#define distacne_check_INTERVAL 500
+#define distacne_check_INTERVAL 503
+#define lcd_display_INTERVAL 1000
 
 // Software SPI (slower updates, more flexible pin options):
 // pin 12 - Serial clock out (SCLK)
@@ -29,7 +31,9 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 boolean butt_flag = false;
 boolean servo_flag = false;
+boolean lcd_stop_write = false;
 unsigned long sonar_timing = 0;
+unsigned long lcd_timing = 0;
 byte distance; // Max 255cm.
 
 void setup () {
@@ -47,7 +51,7 @@ void setup () {
    display.setTextSize(2);   
    
    pinMode(ledPin, OUTPUT); // устанавливаем порт, как выход
-   myservo.attach(10);  // attaches the servo on pin 9 to the servo object
+   myservo.attach(10);  // attaches the servo on pin to the servo object
    pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту
    pinMode(drive_back_relay_PIN, OUTPUT);
    pinMode(drive_front_relay_PIN, OUTPUT);
@@ -74,43 +78,36 @@ void loop() {
    {
       sonar_timing = millis();       
       distance = sonar.ping_cm();
-	    Serial.print("Ping: ");
+      Serial.print("Ping: ");
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
-      Serial.println("cm");
-      display.clearDisplay();   
-      display.setCursor(0,0);       
-      display.println(utf8rus("Дист:"));  
-      display.setCursor(0,17); 
-      display.print(distance);
-      display.println(utf8rus(" см"));  
-      display.display();
+      Serial.println("cm");      
    }   
    if (distance == 0)
    {
       digitalWrite(drive_back_relay_PIN, HIGH);
       digitalWrite(drive_front_relay_PIN, HIGH);
-      display.setCursor(0,33);   
-      display.println(utf8rus("CТОП!"));
-      display.display();
+      lcd_stop_write = true;
    }
     else
       {
         if (distance < 35)
           {
             digitalWrite(drive_back_relay_PIN, HIGH);
-            display.setCursor(0,33);   
-            display.println(utf8rus("CТОП!"));
-            display.display();
+            lcd_stop_write = true;
           }
-          else {digitalWrite(drive_back_relay_PIN, LOW);}   
+          else {
+            digitalWrite(drive_back_relay_PIN, LOW);          
+            lcd_stop_write = false;
+          }   
         if (distance > 90)
           {
             digitalWrite(drive_front_relay_PIN, HIGH);
-            display.setCursor(0,33);   
-            display.println(utf8rus("CТОП!"));
-            display.display();
+            lcd_stop_write = true;
           }
-          else {digitalWrite(drive_front_relay_PIN, LOW);}   
+          else {
+            digitalWrite(drive_front_relay_PIN, LOW);
+            lcd_stop_write = false;
+          }   
       }   
       
    debouncer.update();
@@ -132,7 +129,25 @@ void loop() {
       butt_flag = false;
       myservo.detach();       
    }   
+   if (millis() - lcd_timing > lcd_display_INTERVAL)
+   {
+      lcd_timing = millis();      
+      display.clearDisplay();   
+      display.setCursor(0,0);       
+      display.println(utf8rus("Дист:"));  
+      display.setCursor(0,17); 
+      display.print(distance);
+      display.println(utf8rus(" см"));  
+      display.display();
+      if (lcd_stop_write == true)
+      {
+        display.setCursor(0,33);   
+        display.println(utf8rus("CТОП!"));
+        display.display();
+      }
+   }
 }
+
 
 /* Recode russian fonts from UTF-8 to Windows-1251 */
 String utf8rus(String source)
