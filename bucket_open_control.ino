@@ -6,25 +6,24 @@
 #include <Bounce2.h>
 #include <NewPing.h>
 
-#define PIN_BUTTON 3
-#define servoPin 10
-#define ledPin 13
-#define TRIGGER_PIN 7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN 6  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define PIN_BUTTON 8
+#define servoPin A0
+#define lcd_light_Pin A1
+#define TRIGGER_PIN 9  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN 10  // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm (Max 255cm now).
-#define drive_back_relay_PIN 4
-#define drive_front_relay_PIN 5
-#define led_INTERVAL  500UL 
-#define distacne_check_INTERVAL 503
-#define lcd_display_INTERVAL 1000
+#define drive_back_relay_PIN 11
+#define drive_front_relay_PIN 12
+#define distacne_check_INTERVAL 500
+#define lcd_display_INTERVAL 500
 
 // Software SPI (slower updates, more flexible pin options):
-// pin 12 - Serial clock out (SCLK)
-// pin 11 - Serial data out (DIN)
-// pin 9 - Data/Command select (D/C)
-// pin 8 - LCD chip select (CS)
-// pin 2 - LCD reset (RST)
-Adafruit_PCD8544 display = Adafruit_PCD8544(12, 11, 9, 8, 2);
+// pin 3 - Serial clock out (SCLK)
+// pin 4 - Serial data out (DIN)
+// pin 5 - Data/Command select (D/C)
+// pin 6 - LCD chip select (CS)
+// pin 7 - LCD reset (RST)
+Adafruit_PCD8544 display = Adafruit_PCD8544( 3, 4, 5, 6, 7);
 
 VarSpeedServo myservo;    // create servo object to control a servo 
 Bounce debouncer = Bounce();
@@ -32,12 +31,13 @@ NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 
 boolean butt_flag = false;
 boolean servo_flag = false;
-boolean lcd_stop_write = false;
 unsigned long sonar_timing = 0;
 unsigned long lcd_timing = 0;
 byte distance; // Max 255cm.
 
 void setup () {
+   pinMode(lcd_light_Pin, OUTPUT);
+   analogWrite(lcd_light_Pin, 250);
    display.begin();
    display.cp437(true);
     // init done
@@ -50,7 +50,6 @@ void setup () {
    display.setTextColor(BLACK);   
    display.setTextSize(2);   
    
-   pinMode(ledPin, OUTPUT); // устанавливаем порт, как выход
    myservo.attach(servoPin);  // attaches the servo on pin to the servo object
    pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту
    pinMode(drive_back_relay_PIN, OUTPUT);
@@ -64,16 +63,6 @@ void setup () {
 }
 
 void loop() {
-   static unsigned long previousMillis = 0;
-   if(millis() - previousMillis > led_INTERVAL) 
-   {
-    // сохраняем время последнего переключения
-    previousMillis = millis(); 
-   }     
-   if(millis() - previousMillis > 0*led_INTERVAL/6 && millis() - previousMillis < 1*led_INTERVAL/6) {
-      digitalWrite(ledPin,HIGH);}
-   if(millis() - previousMillis > 1*led_INTERVAL/6 && millis() - previousMillis < 2*led_INTERVAL/6) {
-      digitalWrite(ledPin,LOW);}
       
    if (millis() - sonar_timing > distacne_check_INTERVAL)
    {
@@ -86,28 +75,23 @@ void loop() {
    if (distance == 0)
    {
       digitalWrite(drive_back_relay_PIN, HIGH);
-      digitalWrite(drive_front_relay_PIN, HIGH);
-      lcd_stop_write = true;
+      digitalWrite(drive_front_relay_PIN, HIGH);      
    }
     else
       {
         if (distance < 35)
           {
-            digitalWrite(drive_back_relay_PIN, HIGH);
-            lcd_stop_write = true;
+            digitalWrite(drive_back_relay_PIN, HIGH);            
           }
           else {
-            digitalWrite(drive_back_relay_PIN, LOW);          
-            lcd_stop_write = false;
+            digitalWrite(drive_back_relay_PIN, LOW);                      
           }   
         if (distance > 90)
           {
-            digitalWrite(drive_front_relay_PIN, HIGH);
-            lcd_stop_write = true;
+            digitalWrite(drive_front_relay_PIN, HIGH);           
           }
           else {
-            digitalWrite(drive_front_relay_PIN, LOW);
-            lcd_stop_write = false;
+            digitalWrite(drive_front_relay_PIN, LOW);           
           }   
       }   
       
@@ -116,8 +100,7 @@ void loop() {
    {
       butt_flag = true;
       myservo.attach(servoPin);
-      myservo.write(180, 20, false);      
-      butt_flag = true;
+      myservo.write(180, 20, false);            
    }
    if (myservo.read() == 180 && butt_flag == true)
    {           
@@ -138,14 +121,13 @@ void loop() {
       display.println(utf8rus("Дист:"));  
       display.setCursor(0,17); 
       display.print(distance);
-      display.println(utf8rus(" см"));  
-      display.display();
-      if (lcd_stop_write == true)
+      display.println(utf8rus(" см"));      
+      if (digitalRead(drive_back_relay_PIN) == HIGH || digitalRead(drive_front_relay_PIN) == HIGH)
       {
         display.setCursor(0,33);   
         display.println(utf8rus("CТОП!"));
-        display.display();
       }
+        display.display();      
    }
 }
 
