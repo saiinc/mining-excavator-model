@@ -54,7 +54,9 @@ void setup () {
    pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту
    pinMode(drive_back_relay_PIN, OUTPUT);
    pinMode(drive_front_relay_PIN, OUTPUT);
-   myservo.write(15, 0, true);
+   digitalWrite(drive_back_relay_PIN, HIGH);
+   digitalWrite(drive_front_relay_PIN, HIGH);
+   myservo.write(0, 0, true);
    myservo.detach();
    Serial.begin(9600);
    debouncer.attach(PIN_BUTTON);
@@ -72,6 +74,7 @@ void loop() {
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
       Serial.println("cm");      
    }   
+   /*
    if (distance == 0)
    {
       digitalWrite(drive_back_relay_PIN, HIGH);
@@ -94,7 +97,15 @@ void loop() {
             digitalWrite(drive_front_relay_PIN, LOW);           
           }   
       }   
-      
+     */
+   if (distance > 35 && distance != 0)
+    {digitalWrite(drive_back_relay_PIN, LOW);}
+    else {digitalWrite(drive_back_relay_PIN, HIGH);}
+   if (distance < 90 && distance != 0)
+    {digitalWrite(drive_front_relay_PIN, LOW);}
+    else {digitalWrite(drive_front_relay_PIN, HIGH);}
+    
+   
    debouncer.update();
    if (debouncer.fell() == true && butt_flag == false)
    {
@@ -105,9 +116,9 @@ void loop() {
    if (myservo.read() == 180 && butt_flag == true)
    {           
       servo_flag = true;
-      myservo.write(15, 20, false);                   
+      myservo.write(0, 20, false);                   
    }
-   if (myservo.read() == 15 && servo_flag == true)
+   if (myservo.read() == 0 && servo_flag == true)
    {           
       servo_flag = false;      
       butt_flag = false;
