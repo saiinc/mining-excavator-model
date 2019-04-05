@@ -115,7 +115,7 @@ void loop() {
         display.setCursor(0,33);   
         display.println(utf8rus("CТОП!"));
       }
-        display.display();      
+      display.display();      
    }
 }
 
