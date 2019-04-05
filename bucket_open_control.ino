@@ -1,4 +1,3 @@
-
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
@@ -6,17 +5,17 @@
 #include <Bounce2.h>
 #include <NewPing.h>
 
-#define PIN_BUTTON 8
-#define servoPin A0
-#define lcd_light_Pin A1
+#define PIN_BUTTON 8 // Кнопка открытия днища ковша
+#define servoPin A0 // Мотор открытия днища ковша
 #define TRIGGER_PIN 9  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN 10  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm (Max 255cm now).
-#define drive_back_relay_PIN 11
-#define drive_front_relay_PIN 12
-#define distacne_check_INTERVAL 500
-#define lcd_display_INTERVAL 500
+#define MAX_DISTANCE 150 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm (Max 255cm now).
+#define drive_backward_relay_PIN 11 // Реле движения назад
+#define drive_forward_relay_PIN 12 // Реле движения вперед
+#define distacne_check_INTERVAL 500 // Частота проверки расстояния в мс
+#define lcd_display_INTERVAL 500 // Частота обновления экрана дисплея в мс
 
+// Подключение дисплея
 // Software SPI (slower updates, more flexible pin options):
 // pin 3 - Serial clock out (SCLK)
 // pin 4 - Serial data out (DIN)
@@ -24,10 +23,11 @@
 // pin 6 - LCD chip select (CS)
 // pin 7 - LCD reset (RST)
 Adafruit_PCD8544 display = Adafruit_PCD8544( 3, 4, 5, 6, 7);
+#define lcd_light_Pin A1
 
 VarSpeedServo myservo;    // create servo object to control a servo 
-Bounce debouncer = Bounce();
-NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
+Bounce debouncer = Bounce(); // Создаем объект антидребезга
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // Создаем объект датчика расстояния
 
 boolean butt_flag = false;
 boolean servo_flag = false;
@@ -36,36 +36,33 @@ unsigned long lcd_timing = 0;
 byte distance; // Max 255cm.
 
 void setup () {
+   // Инициализация дисплея
    pinMode(lcd_light_Pin, OUTPUT);
    analogWrite(lcd_light_Pin, 250);
    display.begin();
    display.cp437(true);
-    // init done
-    // you can change the contrast around to adapt the display
-    // for the best viewing!
    display.setContrast(60);
-   display.display(); // show splashscreen   
-    // russian font
+   display.display(); // show splashscreen       
    display.clearDisplay();
    display.setTextColor(BLACK);   
    display.setTextSize(2);   
-   
-   myservo.attach(servoPin);  // attaches the servo on pin to the servo object
-   pinMode(PIN_BUTTON, INPUT_PULLUP);  //привязываем кнопку к порту
-   pinMode(drive_back_relay_PIN, OUTPUT);
-   pinMode(drive_front_relay_PIN, OUTPUT);
-   digitalWrite(drive_back_relay_PIN, HIGH);
-   digitalWrite(drive_front_relay_PIN, HIGH);
-   myservo.write(0, 0, true);
+      
+   pinMode(PIN_BUTTON, INPUT_PULLUP);  
+   pinMode(drive_backward_relay_PIN, OUTPUT);
+   pinMode(drive_forward_relay_PIN, OUTPUT);
+   digitalWrite(drive_backward_relay_PIN, HIGH);
+   digitalWrite(drive_forward_relay_PIN, HIGH);
+   myservo.attach(servoPin);  // Привязываем объект мотора открытия днища ковша к порту
+   myservo.write(0, 0, true); // Задаем исходное положение для мотора открытия днища ковша
    myservo.detach();
    Serial.begin(9600);
-   debouncer.attach(PIN_BUTTON);
+   debouncer.attach(PIN_BUTTON); // Привязываем объект антидребезга к порту кнопки открытия днища ковша
    debouncer.interval(25);
    delay(2000);
 }
 
 void loop() {
-      
+   // Измерение расстояния   
    if (millis() - sonar_timing > distacne_check_INTERVAL)
    {
       sonar_timing = millis();       
@@ -74,38 +71,16 @@ void loop() {
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
       Serial.println("cm");      
    }   
-   /*
-   if (distance == 0)
-   {
-      digitalWrite(drive_back_relay_PIN, HIGH);
-      digitalWrite(drive_front_relay_PIN, HIGH);      
-   }
-    else
-      {
-        if (distance < 35)
-          {
-            digitalWrite(drive_back_relay_PIN, HIGH);            
-          }
-          else {
-            digitalWrite(drive_back_relay_PIN, LOW);                      
-          }   
-        if (distance > 90)
-          {
-            digitalWrite(drive_front_relay_PIN, HIGH);           
-          }
-          else {
-            digitalWrite(drive_front_relay_PIN, LOW);           
-          }   
-      }   
-     */
-   if (distance > 35 && distance != 0)
-    {digitalWrite(drive_back_relay_PIN, LOW);}
-    else {digitalWrite(drive_back_relay_PIN, HIGH);}
-   if (distance < 90 && distance != 0)
-    {digitalWrite(drive_front_relay_PIN, LOW);}
-    else {digitalWrite(drive_front_relay_PIN, HIGH);}
-    
    
+   // Отключение хода в случае выхода расстояния за рамки рабочего диапазона
+   if (distance > 35 && distance != 0)
+    {digitalWrite(drive_backward_relay_PIN, LOW);}
+    else {digitalWrite(drive_backward_relay_PIN, HIGH);}
+   if (distance < 90 && distance != 0)
+    {digitalWrite(drive_forward_relay_PIN, LOW);}
+    else {digitalWrite(drive_forward_relay_PIN, HIGH);}
+    
+   // Работа мотора открытя днища ковша в случае нажатия на кнопку
    debouncer.update();
    if (debouncer.fell() == true && butt_flag == false)
    {
@@ -124,6 +99,8 @@ void loop() {
       butt_flag = false;
       myservo.detach();       
    }   
+
+   // Вывод информации на дисплей
    if (millis() - lcd_timing > lcd_display_INTERVAL)
    {
       lcd_timing = millis();      
@@ -133,7 +110,7 @@ void loop() {
       display.setCursor(0,17); 
       display.print(distance);
       display.println(utf8rus(" см"));      
-      if (digitalRead(drive_back_relay_PIN) == HIGH || digitalRead(drive_front_relay_PIN) == HIGH)
+      if (digitalRead(drive_backward_relay_PIN) == HIGH || digitalRead(drive_forward_relay_PIN) == HIGH)
       {
         display.setCursor(0,33);   
         display.println(utf8rus("CТОП!"));
