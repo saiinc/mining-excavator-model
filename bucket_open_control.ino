@@ -46,7 +46,8 @@ void setup () {
    display.clearDisplay();
    display.setTextColor(BLACK);   
    display.setTextSize(2);   
-      
+
+   // Настройка входов-выходов ардуины
    pinMode(PIN_BUTTON, INPUT_PULLUP);  
    pinMode(drive_backward_relay_PIN, OUTPUT);
    pinMode(drive_forward_relay_PIN, OUTPUT);
@@ -80,7 +81,7 @@ void loop() {
     {digitalWrite(drive_forward_relay_PIN, LOW);}
     else {digitalWrite(drive_forward_relay_PIN, HIGH);}
     
-   // Работа мотора открытя днища ковша в случае нажатия на кнопку
+   // Работа мотора открытия днища ковша в случае нажатия на кнопку
    debouncer.update();
    if (debouncer.fell() == true && butt_flag == false)
    {
