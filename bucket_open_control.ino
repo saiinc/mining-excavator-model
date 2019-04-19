@@ -74,10 +74,10 @@ void loop() {
    }   
    
    // Отключение хода в случае выхода расстояния за рамки рабочего диапазона
-   if (distance > 35 && distance != 0)
+   if (distance > 44 && distance != 0)
     {digitalWrite(drive_backward_relay_PIN, LOW);}
     else {digitalWrite(drive_backward_relay_PIN, HIGH);}
-   if (distance < 90 && distance != 0)
+   if (distance < 84 && distance != 0)
     {digitalWrite(drive_forward_relay_PIN, LOW);}
     else {digitalWrite(drive_forward_relay_PIN, HIGH);}
     
