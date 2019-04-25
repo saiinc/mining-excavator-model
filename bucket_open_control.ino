@@ -55,11 +55,12 @@ void setup () {
    digitalWrite(drive_forward_relay_PIN, HIGH);
    myservo.attach(servoPin);  // Привязываем объект мотора открытия днища ковша к порту
    myservo.write(0, 0, true); // Задаем исходное положение для мотора открытия днища ковша
+   delay(500);
    myservo.detach();
    Serial.begin(9600);
    debouncer.attach(PIN_BUTTON); // Привязываем объект антидребезга к порту кнопки открытия днища ковша
    debouncer.interval(25);
-   delay(2000);
+   delay(1500);
 }
 
 void loop() {
@@ -73,32 +74,32 @@ void loop() {
       Serial.println("cm");      
    }   
    
-   // Отключение хода в случае выхода расстояния за рамки рабочего диапазона
+   // Контроль хода модели экскаватора
    if (distance > 44 && distance != 0)
     {digitalWrite(drive_backward_relay_PIN, LOW);}
-    else {digitalWrite(drive_backward_relay_PIN, HIGH);}
+    else {digitalWrite(drive_backward_relay_PIN, HIGH);} // Отключение хода назад в случае выхода расстояния за рамки рабочего диапазона
    if (distance < 84 && distance != 0)
     {digitalWrite(drive_forward_relay_PIN, LOW);}
-    else {digitalWrite(drive_forward_relay_PIN, HIGH);}
+    else {digitalWrite(drive_forward_relay_PIN, HIGH);} // Отключение хода вперед в случае выхода расстояния за рамки рабочего диапазона
     
    // Работа мотора открытия днища ковша в случае нажатия на кнопку
    debouncer.update();
-   if (debouncer.fell() == true && butt_flag == false)
+   if (debouncer.fell() == true && butt_flag == false) // Проверка нажатия кнопки
    {
       butt_flag = true;
       myservo.attach(servoPin);
-      myservo.write(180, 20, false);            
+      myservo.write(180, 20, false); // Опускаем качельку вниз со скоростью 20
    }
    if (myservo.read() == 180 && butt_flag == true)
    {           
       servo_flag = true;
-      myservo.write(0, 20, false);                   
+      myservo.write(0, 20, false); // Поднимаем качельку в исходное положение со скоростью 20
    }
    if (myservo.read() == 0 && servo_flag == true)
    {           
+      myservo.detach();
       servo_flag = false;      
-      butt_flag = false;
-      myservo.detach();       
+      butt_flag = false;             
    }   
 
    // Вывод информации на дисплей
