@@ -1,2 +1,7 @@
-# bucket_open_control
-arduino servo control
+arduino program for power shovel showpiece
+
+Реализованы две функции: открытие днища ковша и контроль хода модели.
+
+Дистанция от ультразвукового датчика до края подиума выводится на LCD дисплей.
+
+Для отображения русского шрифта на дисплее необходимо заменить файл glcdfont.c в библиотеке Adafruit-GFX.
