@@ -6,7 +6,7 @@
 import processing.serial.*;
 
 Serial  myPort;
-short   portIndex = 0; // Index of serial port in list (varies by computer)
+short   portIndex = 1; // Index of serial port in list (varies by computer)
 int     lf = 10;       //ASCII linefeed
 String  inString;      //String for testing serial communication
 
