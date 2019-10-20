@@ -1,3 +1,6 @@
+#include "GyverTimer.h"
+GTimer_ms myTimer;               // создать таймер
+
 // Modification to Jeff Rowberg's code below to calculate commplementary filter data
 // to be compared to the orientation angle data produced by the MPU-6050 DMP - DA
 
@@ -46,12 +49,13 @@ THE SOFTWARE.
 // is used in I2Cdev.h
 #include "Wire.h"
 
+
 // I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
 // for both classes must be in the include path of your project
 #include "I2Cdev.h"
 
-#include "MPU6050_6Axis_MotionApps20.h"
-//#include "MPU6050.h" // not necessary if using MotionApps include file
+#include "MPU6050_6Axis_MotionApps_V6_12.h"
+//#include "MPU6050_6Axis_MotionApps20.h"
 
 // class default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
@@ -77,9 +81,6 @@ MPU6050 mpu;
    http://code.google.com/p/arduino/issues/detail?id=958
  * ========================================================================= */
 
-#define LED_PIN 13 // (Arduino is 13, Teensy is 11, Teensy++ is 6)
-bool blinkState = false;
-
 
 // MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
@@ -94,26 +95,8 @@ Quaternion q;
 VectorFloat gravity;
 float euler[3];
 float ypr[3];
-
-// Use the following global variables and access functions to help store the overall
-// rotation angle of the sensor
-unsigned long last_read_time;
-float         last_x_angle;  // These are the filtered angles
-float         last_y_angle;
-float         last_z_angle;  
-float         last_gyro_x_angle;  // Store the gyro angles to compare drift
-float         last_gyro_y_angle;
-float         last_gyro_z_angle;
-
-void set_last_read_angle_data(unsigned long time, float x, float y, float z, float x_gyro, float y_gyro, float z_gyro) {
-  last_read_time = time;
-  last_x_angle = x;
-  last_y_angle = y;
-  last_z_angle = z;
-  last_gyro_x_angle = x_gyro;
-  last_gyro_y_angle = y_gyro;
-  last_gyro_z_angle = z_gyro;
-}
+float ypr1[3];
+float pitch;
 
 //  Use the following global variables 
 //  to calibrate the gyroscope sensor and accelerometer readings
@@ -177,6 +160,10 @@ void calibrate_sensors() {
   base_z_accel /= num_readings;
 }
 
+char str[15]; //строка для передачи по UART
+char str_pitch[7];
+char str_yaw[7];
+
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
@@ -186,7 +173,7 @@ void setup() {
     Wire.begin();
 
     // initialize serial communication
-    Serial.begin(57600);
+    Serial.begin(38400);
     while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
     // NOTE: 8MHz or slower host processors, like the Teensy @ 3.3v or Ardunio
@@ -203,13 +190,6 @@ void setup() {
     Serial.println(F("Testing device connections..."));
     Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
-    /*  No waiting necessary for this version
-    // wait for ready
-    Serial.println(F("\nSend any character to begin DMP programming and demo: "));
-    while (Serial.available() && Serial.read()); // empty buffer
-    while (!Serial.available());                 // wait for data
-    while (Serial.available() && Serial.read()); // empty buffer again
-    */
 
     // load and configure the DMP
     Serial.println(F("Initializing DMP..."));
@@ -264,17 +244,14 @@ void setup() {
         Serial.print(devStatus);
         Serial.println(F(")"));
     }
-
-    // configure LED for output
-    pinMode(LED_PIN, OUTPUT);
     
     // get calibration values for sensors
     calibrate_sensors();
-    set_last_read_angle_data(millis(), 0, 0, 0, 0, 0, 0);
+    //set_last_read_angle_data(millis(), 0, 0, 0, 0, 0, 0);
+    
+    myTimer.setInterval(50);   // настроить интервал
+
 }
-
-
-
 // ================================================================
 // ===                    MAIN PROGRAM LOOP                     ===
 // ================================================================
@@ -283,8 +260,8 @@ void loop() {
     const float RADIANS_TO_DEGREES = 57.2958; //180/3.14159
  
     // if programming failed, don't try to do anything
-    if (!dmpReady) return;
-    
+    if (!dmpReady) return;        
+
     // reset interrupt flag and get INT_STATUS byte
     mpuInterrupt = false;
     mpuIntStatus = mpu.getIntStatus();
@@ -311,26 +288,35 @@ void loop() {
         fifoCount -= packetSize;
         
         // Obtain Euler angles from buffer
-        //mpu.dmpGetQuaternion(&q, fifoBuffer);
-        //mpu.dmpGetEuler(euler, &q);
+        mpu.dmpGetQuaternion(&q, fifoBuffer);
+        mpu.dmpGetEuler(euler, &q);
         
         // Obtain YPR angles from buffer
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
   
-       // Output complementary DMP data to the serial port.  The signs on the data needed to be
-       // fudged to get the angle direction correct.       
-       Serial.print("DMP:");
-       Serial.print(ypr[2]*RADIANS_TO_DEGREES, 2);
-       Serial.print(":");
-       Serial.print(-ypr[1]*RADIANS_TO_DEGREES, 2);
-       Serial.print(":");
-       Serial.println(ypr[0]*RADIANS_TO_DEGREES, 2);
-       
-
-        // blink LED to indicate activity
-        blinkState = !blinkState;
-        digitalWrite(LED_PIN, blinkState);
+        //Serial.print("DMP:");
+        pitch = ypr[2]*RADIANS_TO_DEGREES;
+        ypr1[2] = pitch;
+        if (myTimer.isReady()){          
+          dtostrf(pitch, 8, 2, str_pitch); // преобразует вещественные числа в массив символов
+          dtostrf(ypr[0]*RADIANS_TO_DEGREES, 7, 2, str_yaw);
+          for (int i = 0; i < 8; i++)
+          {
+            str[i] = str_pitch[i];
+            str[i+8] = str_yaw[i];
+          }
+          Serial.write(str, 15);
+        }
+        //Serial.print(":");
+        //Serial.print(-ypr[1]*RADIANS_TO_DEGREES, 2);
+        ypr1[1] = -ypr[1]*RADIANS_TO_DEGREES;
+        //Serial.print(":");
+        //Serial.println(ypr[0]*RADIANS_TO_DEGREES, 2);
+        ypr1[0] = ypr[0]*RADIANS_TO_DEGREES;
+        
+        //delay(10);
+             
     }
 }
