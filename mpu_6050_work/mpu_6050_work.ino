@@ -181,7 +181,7 @@ void setup() {
     // the baud timing being too misaligned with processor ticks. You must use
     // 38400 or slower in these cases, or use some kind of external separate
     // crystal solution for the UART timer.
-
+    delay(15);
     // initialize device
     Serial.println(F("Initializing I2C devices..."));
     mpu.initialize();
@@ -213,7 +213,7 @@ void setup() {
         // Set the full scale range of the gyro
         uint8_t FS_SEL = 0;
         //mpu.setFullScaleGyroRange(FS_SEL);
-
+        delay(5);
         // get default full scale value of gyro - may have changed from default
         // function call returns values between 0 and 3
         uint8_t READ_FS_SEL = mpu.getFullScaleGyroRange();
