@@ -16,7 +16,7 @@
 #define arm_up_relay_PIN A2 // Реле подъема ковша
 #define arm_down_relay_PIN A3 // Реле опусканияа ковша
 #define distacne_check_INTERVAL 500 // Частота проверки расстояния в мс
-#define lcd_display_INTERVAL 500 // Частота обновления экрана дисплея в мс
+#define lcd_display_INTERVAL 200 // Частота обновления экрана дисплея в мс
 
 // Подключение дисплея
 // Software SPI (slower updates, more flexible pin options):
@@ -31,7 +31,7 @@ Adafruit_PCD8544 display = Adafruit_PCD8544( 3, 4, 5, 6, 7);
 VarSpeedServo myservo;    // create servo object to control a servo 
 Bounce debouncer = Bounce(); // Создаем объект антидребезга
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // Создаем объект датчика расстояния
-SoftwareSerial mySerial1(2, 13); // RX, TX UART
+SoftwareSerial mySerial1(16, 2); // RX, TX UART
 
 boolean butt_flag = false;
 boolean servo_flag = false;
@@ -41,6 +41,7 @@ byte distance; // Max 255cm.
 char str[15]; //прием по UART
 float pitch = 0.0;
 float yaw = 0.0;
+
 
 void setup () {
    // Инициализация дисплея
@@ -72,50 +73,58 @@ void setup () {
    mySerial1.begin(38400); //прием по UART
    debouncer.attach(PIN_BUTTON); // Привязываем объект антидребезга к порту кнопки открытия днища ковша
    debouncer.interval(25);
+
+
+   
    delay(1500);
 }
 
 void loop() {
+      Serial.print("Ping: ");
+      Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
+      Serial.print("cm ");
+      Serial.print("Angle: ");
+      Serial.print(pitch, 4); // Send ping, get distance in cm and print result (0 = outside set distance range)
+      Serial.println("deg");  
    // Измерение расстояния   
    if (millis() - sonar_timing > distacne_check_INTERVAL)
    {
       sonar_timing = millis();       
       distance = sonar.ping_cm();
-      Serial.print("Ping: ");
-      Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
-      Serial.println("cm");      
+      
    }   
 
    // Прием по UART
-   uint8_t i=0;
-   if (mySerial1.available()) {
+   uint8_t i = 0;
+   if (mySerial1.available()) {    
     while(mySerial1.available() && i < 15) {
       str[i++] = mySerial1.read();
     }
-    str[i++]='\0';
-   }
+    str[i++]='\0';    
+   }   
    if(i>0) {
     char str_pitch[7];
     char str_yaw[7];
     for (uint8_t j = 0; j < 8; j++){
       str_pitch[j] = str[j+1];      
-    }  
+    }         
+    
     pitch = atof(str_pitch); //преобразует  массив символов в вещественные числа
-    for (uint8_t j = 8; j < 16; j++){      
-      str_yaw[j-8] = str[j];
-    }       
-    yaw = atof(str_yaw);    
+    //for (uint8_t j = 8; j < 16; j++){      
+    //  str_yaw[j-8] = str[j];
+    //}       
+    //yaw = atof(str_yaw);    
    }
-/*
+
    // Контроль подъема ковша
-   if (pitch > 45.0 && pitch != 0.0)
+   if (pitch < 45.00 && pitch != 0.00)
     {digitalWrite(arm_up_relay_PIN, LOW);}
     else {digitalWrite(arm_up_relay_PIN, HIGH);} // Отключение подъема ковша в случае превышения максимального угла
-   if (pitch < -45.0 && pitch != 0.0)
+   if (pitch > -45.00 && pitch != 0.00)
     {digitalWrite(arm_down_relay_PIN, LOW);}
     else {digitalWrite(arm_down_relay_PIN, HIGH);} // Отключение опускания ковша в случае превышения минимального угла
-  */ 
-   // Контроль хода модели
+  
+   // Контроль хода модели   
    if (distance > 44 && distance != 0)
     {digitalWrite(drive_backward_relay_PIN, LOW);}
     else {digitalWrite(drive_backward_relay_PIN, HIGH);} // Отключение хода назад в случае выхода расстояния за рамки рабочего диапазона
@@ -151,6 +160,7 @@ void loop() {
       display.setCursor(0,0);       
       //display.println(utf8rus("Дист:"));  
       display.print(pitch);
+
       display.setCursor(0,17); 
       display.print(distance);
       display.println(utf8rus(" см"));      
