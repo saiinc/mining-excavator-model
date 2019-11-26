@@ -32,7 +32,8 @@ Adafruit_PCD8544 display = Adafruit_PCD8544( 3, 4, 5, 6, 7);
 VarSpeedServo myservo;    // create servo object to control a servo 
 Bounce debouncer = Bounce(); // Создаем объект антидребезга
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // Создаем объект датчика расстояния
-SoftwareSerial mySerial1(2, 13); // RX, TX UART
+SoftwareSerial mySerial1(2, 16); // RX, TX UART
+
 
 boolean butt_flag = false;
 boolean servo_flag = false;
@@ -118,18 +119,18 @@ void loop() {
       
    } 
    // Контроль подъема ковша
-   if (pitch < 45.00 && pitch != 0.00)
+   if (pitch < 45.00)
     {digitalWrite(arm_up_relay_PIN, LOW);}
     else {digitalWrite(arm_up_relay_PIN, HIGH);} // Отключение подъема ковша в случае превышения максимального угла
-   if (pitch > -45.00 && pitch != 0.00)
+   if (pitch > -45.00)
     {digitalWrite(arm_down_relay_PIN, LOW);}
     else {digitalWrite(arm_down_relay_PIN, HIGH);} // Отключение опускания ковша в случае превышения минимального угла
   
    // Контроль хода модели   
-   if (distance > 44 && distance != 0)
+   if (distance > 44)
     {digitalWrite(drive_backward_relay_PIN, LOW);}
     else {digitalWrite(drive_backward_relay_PIN, HIGH);} // Отключение хода назад в случае выхода расстояния за рамки рабочего диапазона
-   if (distance < 84 && distance != 0)
+   if (distance < 84)
     {digitalWrite(drive_forward_relay_PIN, LOW);}
     else {digitalWrite(drive_forward_relay_PIN, HIGH);} // Отключение хода вперед в случае выхода расстояния за рамки рабочего диапазона
     
