@@ -1,3 +1,4 @@
+
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
@@ -33,11 +34,12 @@ Bounce debouncer = Bounce(); // Создаем объект антидребез
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // Создаем объект датчика расстояния
 SoftwareSerial mySerial1(2, 16); // RX, TX UART
 
+
 boolean butt_flag = false;
 boolean servo_flag = false;
 unsigned long sonar_timing = 0;
 unsigned long lcd_timing = 0;
-byte distance; // Max 255cm.
+uint8_t distance; // Max 255cm.
 char str[15]; //прием по UART
 float pitch = 0.0;
 float yaw = 0.0;
@@ -80,19 +82,13 @@ void setup () {
 }
 
 void loop() {
-      Serial.print("Ping: ");
+      /*Serial.print("Ping: ");
       Serial.print(distance); // Send ping, get distance in cm and print result (0 = outside set distance range)
       Serial.print("cm ");
       Serial.print("Angle: ");
       Serial.print(pitch, 4); // Send ping, get distance in cm and print result (0 = outside set distance range)
-      Serial.println("deg");  
-   // Измерение расстояния   
-   if (millis() - sonar_timing > distacne_check_INTERVAL)
-   {
-      sonar_timing = millis();       
-      distance = sonar.ping_cm();
-      
-   }   
+      Serial.println("deg");  */
+  
 
    // Прием по UART
    uint8_t i = 0;
@@ -115,7 +111,13 @@ void loop() {
     //}       
     //yaw = atof(str_yaw);    
    }
-
+   // Измерение расстояния   
+   if (millis() - sonar_timing > distacne_check_INTERVAL)
+   {
+      sonar_timing = millis();       
+      distance = sonar.ping_cm();
+      
+   } 
    // Контроль подъема ковша
    if (pitch > 2.00)
     {digitalWrite(arm_up_relay_PIN, LOW);}
