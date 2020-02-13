@@ -119,10 +119,10 @@ void loop() {
       
    } 
    // Контроль подъема ковша
-   if (pitch < 45.00)
+   if (pitch > 2.00)
     {digitalWrite(arm_up_relay_PIN, LOW);}
     else {digitalWrite(arm_up_relay_PIN, HIGH);} // Отключение подъема ковша в случае превышения максимального угла
-   if (pitch > -45.00)
+   if (pitch < 66.00)
     {digitalWrite(arm_down_relay_PIN, LOW);}
     else {digitalWrite(arm_down_relay_PIN, HIGH);} // Отключение опускания ковша в случае превышения минимального угла
   
