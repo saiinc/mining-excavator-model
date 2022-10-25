@@ -1,4 +1,5 @@
 arduino program for power shovel showpiece
+https://youtu.be/OUvKpH_-H1o
 
 Реализованы две функции: открытие днища ковша и контроль хода модели.
 
